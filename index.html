@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>シュガー・キングダム 〜わたしだけの魔法ケーキ〜</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: 'Hiragino Sans', 'ヒラギノ角ゴシック', 'Yu Gothic UI', sans-serif;
+            background: linear-gradient(135deg, #FFE4E6, #FFF0F5, #E6F3FF);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="%23FFB6C1" opacity="0.3"><animate attributeName="r" values="2;4;2" dur="3s" repeatCount="indefinite"/></circle><circle cx="60" cy="40" r="1.5" fill="%23DDA0DD" opacity="0.4"><animate attributeName="r" values="1.5;3;1.5" dur="2s" repeatCount="indefinite"/></circle><circle cx="80" cy="70" r="2.5" fill="%23F0E68C" opacity="0.3"><animate attributeName="r" values="2.5;4.5;2.5" dur="4s" repeatCount="indefinite"/></circle></svg>') repeat;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .container {
+            max-width: 390px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #8B4B8C;
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 14px;
+            color: #B85D9B;
+            font-style: italic;
+        }
+        
+        .screen {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(255, 182, 193, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .question {
+            font-size: 18px;
+            color: #8B4B8C;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .choices {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .choice-btn {
+            background: linear-gradient(135deg, #FFB6C1, #DDA0DD);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(221, 160, 221, 0.3);
+            touch-action: manipulation;
+        }
+        
+        .choice-btn:hover, .choice-btn:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(221, 160, 221, 0.4);
+        }
+        
+        .choice-btn:active {
+            transform: translateY(0);
+        }
+        
+        .cake-display {
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .cake-image {
+            width: 280px;
+            height: 280px;
+            margin: 0 auto 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(221, 160, 221, 0.3);
+            background: linear-gradient(135deg, #FFE4E6, #FFF0F5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            border: 3px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .cake-name {
+            font-size: 20px;
+            color: #8B4B8C;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .cake-type {
+            font-size: 16px;
+            color: #B85D9B;
+            background: linear-gradient(135deg, rgba(255, 182, 193, 0.3), rgba(221, 160, 221, 0.3));
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+        
+        .cake-description {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #8B4B8C, #B85D9B);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(139, 75, 140, 0.3);
+            touch-action: manipulation;
+        }
+        
+        .btn:hover, .btn:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 75, 140, 0.4);
+        }
+        
+        .btn.secondary {
+            background: linear-gradient(135deg, #FFB6C1, #DDA0DD);
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 4px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #FFB6C1, #DDA0DD);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .collection-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .collection-item {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(221, 160, 221, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .collection-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(221, 160, 221, 0.3);
+        }
+        
+        .collection-item img {
+            width: 80px;
+            height: 80px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+        }
+        
+        .collection-item .name {
+            font-size: 12px;
+            color: #8B4B8C;
+            font-weight: 600;
+        }
+        
+        .tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 25px;
+            padding: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            flex: 1;
+            background: transparent;
+            color: #B85D9B;
+            border: none;
+            padding: 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            background: linear-gradient(135deg, #FFB6C1, #DDA0DD);
+            color: white;
+            box-shadow: 0 2px 10px rgba(221, 160, 221, 0.3);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 182, 193, 0.3);
+            border-top: 4px solid #FFB6C1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .stat {
+            background: rgba(255, 255, 255, 0.5);
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #8B4B8C;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #B85D9B;
+            margin-top: 2px;
+        }
+        
+        @media (max-width: 350px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .cake-image {
+                width: 240px;
+                height: 240px;
+                font-size: 60px;
+            }
+            
+            .title {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="title">🍰 シュガー・キングダム 🍰</div>
+            <div class="subtitle">〜わたしだけの魔法ケーキ〜</div>
+        </div>
+        
+        <!-- ホーム画面 -->
+        <div id="home-screen" class="screen active">
+            <div class="card">
+                <div class="cake-display">
+                    <div class="cake-image">🏰</div>
+                    <div class="cake-name">パティスフィア王国へようこそ</div>
+                    <div class="cake-description">
+                        あなたは新人ケーキ魔導士。<br>
+                        感情をケーキに変換する魔法を使って、<br>
+                        世界に一つだけの魔法ケーキを創りましょう。
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn" onclick="startDiagnosis()">🔮 感情診断を始める</button>
+                        <button class="btn secondary" onclick="showCollection()">📚 ケーキ図鑑</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 診断画面 -->
+        <div id="diagnosis-screen" class="screen">
+            <div class="card">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <div class="question" id="question-text"></div>
+                <div class="choices" id="choices-container"></div>
+            </div>
+        </div>
+        
+        <!-- ローディング画面 -->
+        <div id="loading-screen" class="screen">
+            <div class="card">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <div style="font-size: 18px; color: #8B4B8C; margin-bottom: 10px;">✨ 魔法をかけています ✨</div>
+                    <div style="font-size: 14px; color: #B85D9B;">あなたの感情がケーキに変わっています...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 結果画面 -->
+        <div id="result-screen" class="screen">
+            <div class="card">
+                <div class="cake-display">
+                    <img id="result-cake-image" class="cake-image" alt="あなたのケーキ" 
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                    <div class="cake-image" id="result-cake-fallback" style="display:none;"></div>
+                    <div class="cake-name" id="result-cake-name"></div>
+                    <div class="cake-type" id="result-cake-type"></div>
+                    <div class="cake-description" id="result-cake-description"></div>
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="stat-value" id="stat-sweetness">0</div>
+                            <div class="stat-label">甘さ</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="stat-romance">0</div>
+                            <div class="stat-label">ロマンス</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="stat-dream">0</div>
+                            <div class="stat-label">夢</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="stat-mystery">0</div>
+                            <div class="stat-label">ミステリー</div>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn" onclick="saveCake()">💾 ケーキを保存</button>
+                        <button class="btn secondary" onclick="shareCake()">📱 シェア</button>
+                        <button class="btn secondary" onclick="goHome()">🏠 ホーム</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- コレクション画面 -->
+        <div id="collection-screen" class="screen">
+            <div class="card">
+                <div class="tabs">
+                    <button class="tab active" onclick="showTab('all')">すべて</button>
+                    <button class="tab" onclick="showTab('romance')">ロマンス</button>
+                    <button class="tab" onclick="showTab('dream')">ドリーム</button>
+                    <button class="tab" onclick="showTab('mystery')">ミステリー</button>
+                </div>
+                <div class="collection-grid" id="collection-grid"></div>
+                <div class="action-buttons" style="margin-top: 20px;">
+                    <button class="btn secondary" onclick="goHome()">🏠 ホームに戻る</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ゲームデータ
+        const questions = [
+            {
+                text: "最近一番考えていることは？",
+                choices: [
+                    { text: "恋愛のこと💕", weights: { sweetness: 20, romance: 30, dream: 10, mystery: 5 } },
+                    { text: "将来の夢✨", weights: { sweetness: 15, romance: 5, dream: 30, mystery: 10 } },
+                    { text: "友達との関係👭", weights: { sweetness: 25, romance: 15, dream: 15, mystery: 0 } },
+                    { text: "なんとなく不安...😰", weights: { sweetness: 5, romance: 5, dream: 5, mystery: 25 } }
+                ]
+            },
+            {
+                text: "今の気分を色で例えると？",
+                choices: [
+                    { text: "ピンク💗", weights: { sweetness: 25, romance: 25, dream: 15, mystery: 0 } },
+                    { text: "水色💙", weights: { sweetness: 15, romance: 10, dream: 25, mystery: 5 } },
+                    { text: "紫💜", weights: { sweetness: 10, romance: 20, dream: 20, mystery: 20 } },
+                    { text: "グレー🩶", weights: { sweetness: 5, romance: 0, dream: 5, mystery: 30 } }
+                ]
+            },
+            {
+                text: "理想のデートは？",
+                choices: [
+                    { text: "遊園地で一日中🎢", weights: { sweetness: 30, romance: 20, dream: 20, mystery: 0 } },
+                    { text: "おしゃれなカフェでまったり☕", weights: { sweetness: 20, romance: 25, dream: 15, mystery: 5 } },
+                    { text: "夜景の見える場所で🌃", weights: { sweetness: 15, romance: 30, dream: 25, mystery: 15 } },
+                    { text: "一人の時間も大切...🤔", weights: { sweetness: 10, romance: 5, dream: 15, mystery: 25 } }
+                ]
+            },
+            {
+                text: "好きなスイーツは？",
+                choices: [
+                    { text: "いちごのショートケーキ🍰", weights: { sweetness: 30, romance: 20, dream: 10, mystery: 0 } },
+                    { text: "チョコレートケーキ🍫", weights: { sweetness: 25, romance: 25, dream: 5, mystery: 10 } },
+                    { text: "レインボーケーキ🌈", weights: { sweetness: 20, romance: 10, dream: 30, mystery: 5 } },
+                    { text: "抹茶の和スイーツ🍃", weights: { sweetness: 15, romance: 15, dream: 20, mystery: 20 } }
+                ]
+            },
+            {
+                text: "休日の過ごし方は？",
+                choices: [
+                    { text: "友達とショッピング🛍️", weights: { sweetness: 25, romance: 15, dream: 15, mystery: 5 } },
+                    { text: "一人で映画鑑賞🎬", weights: { sweetness: 10, romance: 15, dream: 25, mystery: 15 } },
+                    { text: "恋人とのんびり💕", weights: { sweetness: 20, romance: 30, dream: 10, mystery: 5 } },
+                    { text: "家でゴロゴロ😴", weights: { sweetness: 15, romance: 5, dream: 10, mystery: 20 } }
+                ]
+            },
+            {
+                text: "魔法が使えたら何をしたい？",
+                choices: [
+                    { text: "好きな人の心を知りたい💫", weights: { sweetness: 15, romance: 30, dream: 15, mystery: 20 } },
+                    { text: "空を飛んで冒険したい🕊️", weights: { sweetness: 20, romance: 10, dream: 30, mystery: 10 } },
+                    { text: "美味しいお菓子を無限に🍪", weights: { sweetness: 30, romance: 15, dream: 20, mystery: 0 } },
+                    { text: "未来を見てみたい🔮", weights: { sweetness: 5, romance: 10, dream: 25, mystery: 30 } }
+                ]
+            },
+            {
+                text: "どんな物語が好き？",
+                choices: [
+                    { text: "王子様との恋愛物語👑", weights: { sweetness: 25, romance: 30, dream: 20, mystery: 5 } },
+                    { text: "魔法少女の冒険🌟", weights: { sweetness: 20, romance: 15, dream: 30, mystery: 10 } },
+                    { text: "ミステリー・サスペンス🕵️", weights: { sweetness: 5, romance: 10, dream: 10, mystery: 30 } },
+                    { text: "日常系の癒し物語🌸", weights: { sweetness: 30, romance: 20, dream: 15, mystery: 0 } }
+                ]
+            },
+            {
+                text: "今一番欲しいものは？",
+                choices: [
+                    { text: "素敵な恋人💕", weights: { sweetness: 20, romance: 30, dream: 15, mystery: 5 } },
+                    { text: "夢を叶える力✨", weights: { sweetness: 15, romance: 10, dream: 30, mystery: 15 } },
+                    { text: "変わらない友情👭", weights: { sweetness: 25, romance: 15, dream: 15, mystery: 5 } },
+                    { text: "本当の自分を知ること🪞", weights: { sweetness: 10, romance: 5, dream: 20, mystery: 30 } }
+                ]
+            }
+        ];
+        
+        const cakeTypes = [
+            {
+                name: "ピュアハートケーキ",
+                type: "♡ ピュアロマンス",
+                emoji: "💗",
+                description: "純粋な恋心をそのままケーキにしました。甘酸っぱいいちごの味が、初恋の気持ちを思い出させてくれます。恋に積極的になれる魔法が込められています。",
+                image: "assets/illustrations/cakes/pure_heart_cake.png",
+                condition: (scores) => scores.romance >= 50 && scores.sweetness >= 40 && scores.mystery <= 30
+            },
+            {
+                name: "ドリームクラウンケーキ",
+                type: "✨ ドリーミー",
+                emoji: "👑",
+                description: "夢見る乙女の心を表現した、雲のように軽やかなケーキ。あなたの願いを星座のように美しく飾り付けました。夢を叶える勇気をくれる魔法のケーキです。",
+                image: "assets/illustrations/cakes/dream_crown_cake.png",
+                condition: (scores) => scores.dream >= 50 && scores.sweetness >= 30 && scores.mystery <= 40
+            },
+            {
+                name: "ミッドナイトミステリーケーキ",
+                type: "🌙 ダークエレガント",
+                emoji: "🖤",
+                description: "深夜の静寂に潜む、あなたの内なる謎を表現した大人のケーキ。ビターチョコレートの奥深い味わいが、複雑な心境を物語っています。真実を見抜く洞察力を高める魔法が込められています。",
+                image: "assets/illustrations/cakes/midnight_mystery_cake.png",
+                condition: (scores) => scores.mystery >= 50 && scores.sweetness <= 40
+            },
+            {
+                name: "スイートフレンドシップケーキ",
+                type: "🌈 フレンドリー",
+                emoji: "👭",
+                description: "友達との楽しい時間を表現した、カラフルで華やかなケーキ。みんなでシェアする喜びが詰まっています。友情を深め、新しい出会いを引き寄せる魔法のケーキです。",
+                image: "assets/illustrations/cakes/sweet_friendship_cake.png",
+                condition: (scores) => scores.sweetness >= 60 && scores.romance <= 40 && scores.mystery <= 30
+            },
+            {
+                name: "エンジェルウィングケーキ",
+                type: "🕊️ セレスティアル",
+                emoji: "👼",
+                description: "天使の羽をイメージした、神秘的で美しいケーキ。純白のクリームに金の装飾が施されています。心を浄化し、新しい始まりへの勇気をくれる魔法が込められています。",
+                image: "assets/illustrations/cakes/angel_wing_cake.png",
+                condition: (scores) => scores.dream >= 40 && scores.sweetness >= 30 && scores.romance >= 30 && scores.mystery <= 35
+            },
+            {
+                name: "ロイヤルラブケーキ",
+                type: "👑 ロイヤルロマンス",
+                emoji: "💎",
+                description: "王室の舞踏会をイメージした豪華絢爛なケーキ。バラの花びらと宝石のような装飾が、運命の恋を予感させます。理想の恋人との出会いを引き寄せる魔法のケーキです。",
+                image: "assets/illustrations/cakes/royal_love_cake.png",
+                condition: (scores) => scores.romance >= 60 && scores.dream >= 30 && scores.sweetness >= 40
+            },
+            {
+                name: "コズミックドリームケーキ",
+                type: "🌟 コスモス",
+                emoji: "🌌",
+                description: "宇宙の神秘を表現した幻想的なケーキ。星座のように輝くトッピングが、無限の可能性を表しています。大きな夢を叶える宇宙規模の魔法が込められています。",
+                image: "assets/illustrations/cakes/cosmic_dream_cake.png",
+                condition: (scores) => scores.dream >= 65 && scores.mystery >= 35 && scores.sweetness >= 25
+            },
+            {
+                name: "シークレットガーデンケーキ",
+                type: "🌹 エニグマティック",
+                emoji: "🗝️",
+                description: "秘密の花園をイメージした、謎めいた美しさのケーキ。隠された扉のような装飾が、あなたの内なる秘密を守ります。隠された才能を開花させる魔法のケーキです。",
+                image: "assets/illustrations/cakes/secret_garden_cake.png",
+                condition: (scores) => scores.mystery >= 45 && scores.dream >= 35 && scores.romance >= 25
+            },
+            {
+                name: "ハートフルスマイルケーキ",
+                type: "😊 ハッピー",
+                emoji: "🌻",
+                description: "太陽のような明るい笑顔をイメージした、元気いっぱいのケーキ。食べる人を自然と笑顔にしてしまう魔法が込められています。ポジティブなエネルギーを周りに広げるケーキです。",
+                image: "assets/illustrations/cakes/heartful_smile_cake.png",
+                condition: (scores) => scores.sweetness >= 50 && scores.romance >= 25 && scores.dream >= 25 && scores.mystery <= 30
+            },
+            {
+                name: "トワイライトソウルケーキ",
+                type: "🌆 ソウルフル",
+                emoji: "🌙",
+                description: "夕暮れ時の切ない美しさを表現した、大人の魅力あふれるケーキ。複雑な感情を受け入れる心の余裕を育てる魔法が込められています。内面の美しさを引き出すケーキです。",
+                image: "assets/illustrations/cakes/twilight_soul_cake.png",
+                condition: (scores) => scores.mystery >= 40 && scores.romance >= 35 && scores.dream >= 25 && scores.sweetness <= 45
+            },
+            {
+                name: "ファンタジアケーキ",
+                type: "🎭 ファンタジック",
+                emoji: "🎪",
+                description: "おとぎ話の世界から飛び出したような、不思議で楽しいケーキ。現実と空想の境界を曖昧にする魔法が込められています。想像力を無限に広げるケーキです。",
+                image: "assets/illustrations/cakes/fantasia_cake.png",
+                condition: (scores) => scores.dream >= 55 && scores.sweetness >= 35 && scores.mystery >= 30 && scores.romance <= 40
+            },
+            {
+                name: "エレガントローズケーキ",
+                type: "🌹 エレガント",
+                emoji: "🥀",
+                description: "気品ある大人の女性をイメージした、上品で洗練されたケーキ。深紅のバラが大人の魅力を表現しています。自信と品格を身につける魔法のケーキです。",
+                image: "assets/illustrations/cakes/elegant_rose_cake.png",
+                condition: (scores) => scores.romance >= 45 && scores.mystery >= 35 && scores.sweetness >= 25 && scores.dream <= 45
+            },
+            {
+                name: "プリンセスティアラケーキ",
+                type: "👸 プリンセス",
+                emoji: "✨",
+                description: "お姫様の夢を叶える、きらめくティアラのようなケーキ。あなたの中に眠る気品と優雅さを引き出します。自分を大切にし、愛される魅力を高める魔法のケーキです。",
+                image: "assets/illustrations/cakes/princess_tiara_cake.png",
+                condition: (scores) => scores.sweetness >= 45 && scores.romance >= 40 && scores.dream >= 40 && scores.mystery <= 35
+            },
+            {
+                name: "ムーンライトドリームケーキ",
+                type: "🌙 ルナティック",
+                emoji: "🦋",
+                description: "月の光に照らされた夜の夢をイメージした幻想的なケーキ。蝶の羽のような繊細な装飾が美しく舞っています。潜在意識に隠された願いを現実化する魔法のケーキです。",
+                image: "assets/illustrations/cakes/moonlight_dream_cake.png",
+                condition: (scores) => scores.dream >= 50 && scores.mystery >= 40 && scores.romance >= 30 && scores.sweetness <= 50
+            },
+            {
+                name: "ハーモニーブロッサムケーキ",
+                type: "🌸 ハーモニー",
+                emoji: "🌺",
+                description: "心の調和を表現した、バランスの取れた美しいケーキ。桜の花びらが心の平穏を表しています。内面の調和を保ち、人間関係を円滑にする魔法のケーキです。",
+                image: "assets/illustrations/cakes/harmony_blossom_cake.png",
+                condition: (scores) => {
+                    const total = scores.sweetness + scores.romance + scores.dream + scores.mystery;
+                    const balanced = Math.abs(scores.sweetness - total/4) <= 15 && 
+                                   Math.abs(scores.romance - total/4) <= 15 && 
+                                   Math.abs(scores.dream - total/4) <= 15 && 
+                                   Math.abs(scores.mystery - total/4) <= 15;
+                    return balanced;
+                }
+            },
+            {
+                name: "インフィニティケーキ",
+                type: "∞ インフィニット",
+                emoji: "♾️",
+                description: "無限の可能性を秘めた究極のケーキ。あなたの全ての面が完璧に調和した、まさに奇跡の創作です。すべての願いを叶える無限の魔法が込められています。",
+                image: "assets/illustrations/cakes/infinity_cake.png",
+                condition: (scores) => scores.sweetness >= 80 && scores.romance >= 80 && scores.dream >= 80 && scores.mystery >= 60
+            }
+        ];
+        
+        // ゲーム状態
+        let currentQuestion = 0;
+        let scores = { sweetness: 0, romance: 0, dream: 0, mystery: 0 };
+        let userCakes = JSON.parse(localStorage.getItem('userCakes') || '[]');
+        let currentCake = null;
+        
+        function startDiagnosis() {
+            currentQuestion = 0;
+            scores = { sweetness: 0, romance: 0, dream: 0, mystery: 0 };
+            showScreen('diagnosis-screen');
+            showQuestion();
+        }
+        
+        function showQuestion() {
+            const question = questions[currentQuestion];
+            const progressPercent = (currentQuestion / questions.length) * 100;
+            
+            document.getElementById('progress-fill').style.width = progressPercent + '%';
+            document.getElementById('question-text').textContent = question.text;
+            
+            const container = document.getElementById('choices-container');
+            container.innerHTML = '';
+            
+            question.choices.forEach((choice, index) => {
+                const button = document.createElement('button');
+                button.className = 'choice-btn';
+                button.textContent = choice.text;
+                button.onclick = () => selectChoice(choice.weights);
+                container.appendChild(button);
+            });
+        }
+        
+        function selectChoice(weights) {
+            Object.keys(weights).forEach(key => {
+                scores[key] += weights[key];
+            });
+            
+            currentQuestion++;
+            
+            if (currentQuestion < questions.length) {
+                showQuestion();
+            } else {
+                generateResult();
+            }
+        }
+        
+        function generateResult() {
+            showScreen('loading-screen');
+            
+            setTimeout(() => {
+                const resultCake = determineCakeType(scores);
+                currentCake = {
+                    ...resultCake,
+                    scores: { ...scores },
+                    createdAt: new Date().toISOString()
+                };
+                
+                displayResult(currentCake);
+                showScreen('result-screen');
+            }, 3000);
+        }
+        
+        function determineCakeType(scores) {
+            for (let cakeType of cakeTypes) {
+                if (cakeType.condition(scores)) {
+                    return cakeType;
+                }
+            }
+            return cakeTypes[8]; // デフォルト: ハートフルスマイルケーキ
+        }
+        
+        function displayResult(cake) {
+            const imageElement = document.getElementById('result-cake-image');
+            const fallbackElement = document.getElementById('result-cake-fallback');
+            
+            imageElement.src = cake.image;
+            fallbackElement.innerHTML = cake.emoji;
+            
+            document.getElementById('result-cake-name').textContent = cake.name;
+            document.getElementById('result-cake-type').textContent = cake.type;
+            document.getElementById('result-cake-description').textContent = cake.description;
+            
+            document.getElementById('stat-sweetness').textContent = cake.scores.sweetness;
+            document.getElementById('stat-romance').textContent = cake.scores.romance;
+            document.getElementById('stat-dream').textContent = cake.scores.dream;
+            document.getElementById('stat-mystery').textContent = cake.scores.mystery;
+        }
+        
+        function saveCake() {
+            if (currentCake) {
+                userCakes.push(currentCake);
+                localStorage.setItem('userCakes', JSON.stringify(userCakes));
+                alert('ケーキを図鑑に保存しました！✨');
+            }
+        }
+        
+        function shareCake() {
+            if (currentCake) {
+                const shareText = `私の魔法ケーキは「${currentCake.name}」(${currentCake.type})でした！\n\n${currentCake.description}\n\n#シュガーキングダム #魔法ケーキ`;
+                
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'シュガー・キングダム',
+                        text: shareText,
+                        url: window.location.href
+                    });
+                } else {
+                    navigator.clipboard.writeText(shareText + '\n' + window.location.href);
+                    alert('シェア用テキストをコピーしました！');
+                }
+            }
+        }
+        
+        function showCollection() {
+            showScreen('collection-screen');
+            displayCollection('all');
+        }
+        
+        function showTab(category) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            displayCollection(category);
+        }
+        
+        function displayCollection(category) {
+            const grid = document.getElementById('collection-grid');
+            grid.innerHTML = '';
+            
+            let cakesToShow = userCakes;
+            if (category !== 'all') {
+                cakesToShow = userCakes.filter(cake => {
+                    switch(category) {
+                        case 'romance': return cake.scores.romance >= 40;
+                        case 'dream': return cake.scores.dream >= 40;
+                        case 'mystery': return cake.scores.mystery >= 40;
+                        default: return true;
+                    }
+                });
+            }
+            
+            if (cakesToShow.length === 0) {
+                grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #B85D9B;">まだケーキがありません<br>診断してケーキを作ってみましょう！</div>';
+                return;
+            }
+            
+            cakesToShow.forEach(cake => {
+                const item = document.createElement('div');
+                item.className = 'collection-item';
+                item.innerHTML = `
+                    <img src="${cake.image}" alt="${cake.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div style="width: 80px; height: 80px; border-radius: 10px; display: none; align-items: center; justify-content: center; font-size: 32px; background: linear-gradient(135deg, #FFE4E6, #FFF0F5);">${cake.emoji}</div>
+                    <div class="name">${cake.name}</div>
+                `;
+                grid.appendChild(item);
+            });
+        }
+        
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+        
+        function goHome() {
+            showScreen('home-screen');
+        }
+        
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            // タッチ操作の最適化
+            document.addEventListener('touchstart', function() {}, true);
+        });
+    </script>
+</body>
+</html>
